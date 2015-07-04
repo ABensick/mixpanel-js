@@ -2702,7 +2702,10 @@ Globals should be all caps
      *       // wait for Mixpanel's servers to respond
      *       track_links_timeout:        300
      *
-     *       // should we track a page view on page load
+     *       // should we track a page view on page load (Mixpanel
+     *       // currently ignores all pageview events, meaning that any
+     *       // pageviews should be tracked manually with the 
+     *       // mixpanel.track() method.
      *       track_pageview:             true
      *
      *       // if you set upgrade to be true, the library will check for
@@ -2912,7 +2915,7 @@ Globals should be all caps
      *     mixpanel.people.increment('page_views');
      *
      *     // to decrement a counter, pass a negative number
-     *     mixpanel.people.increment('credits_left': -1);
+     *     mixpanel.people.increment('credits_left', -1);
      *
      *     // like mixpanel.people.set(), you can increment multiple
      *     // properties at once:
