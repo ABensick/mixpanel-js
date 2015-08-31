@@ -1,5 +1,5 @@
 /*
- * Mixpanel JS Library v2.6.0
+ * Mixpanel JS Library
  *
  * Copyright 2012, Mixpanel, Inc. All Rights Reserved
  * http://mixpanel.com/
@@ -12,7 +12,7 @@
 
 // ==ClosureCompiler==
 // @compilation_level ADVANCED_OPTIMIZATIONS
-// @output_file_name mixpanel-2.5.min.js
+// @output_file_name mixpanel-2.6.min.js
 // ==/ClosureCompiler==
 
 /*
@@ -81,7 +81,7 @@ Globals should be all caps
  */
     var HTTP_PROTOCOL = (("https:" == document.location.protocol) ? "https://" : "http://"),
 
-        LIB_VERSION = '2.6.0',
+        LIB_VERSION = '2.6.2',
         SNIPPET_VERSION = (mixpanel && mixpanel['__SV']) || 0,
 
         // http://hacks.mozilla.org/2009/07/cross-site-xmlhttprequest-with-cors/
@@ -1295,13 +1295,17 @@ Globals should be all caps
          */
         browser: function(user_agent, vendor, opera) {
             var vendor = vendor || ''; // vendor is undefined for at least IE9
-            if (opera) {
+            if (opera || _.includes(user_agent, " OPR/")) {
                 if (_.includes(user_agent, "Mini")) {
                     return "Opera Mini";
                 }
                 return "Opera";
             } else if (/(BlackBerry|PlayBook|BB10)/i.test(user_agent)) {
                 return 'BlackBerry';
+            } else if (_.includes(user_agent, "IEMobile") || _.includes(user_agent, "WPDesktop")) {
+                return "Internet Explorer Mobile";
+            } else if (_.includes(user_agent, "Edge")) {
+                return "Microsoft Edge";
             } else if (_.includes(user_agent, "FBIOS")) {
                 return "Facebook Mobile";
             } else if (_.includes(user_agent, "Chrome")) {
@@ -1336,17 +1340,19 @@ Globals should be all caps
         browserVersion: function(userAgent, vendor, opera) {
             var browser = _.info.browser(userAgent, vendor, opera);
             var versionRegexs = {
-                "Chrome":            /Chrome\/(\d+(\.\d+)?)/,
-                "Chrome iOS":        /Chrome\/(\d+(\.\d+)?)/,
-                "Safari":            /Version\/(\d+(\.\d+)?)/,
-                "Mobile Safari":     /Version\/(\d+(\.\d+)?)/,
-                "Opera":             /Opera\/(\d+(\.\d+)?)/,
-                "Firefox":           /Firefox\/(\d+(\.\d+)?)/,
-                "Konqueror":         /Konqueror:(\d+(\.\d+)?)/,
-                "BlackBerry":        /BlackBerry (\d+(\.\d+)?)/,
-                "Android Mobile":    /android\s(\d+(\.\d+)?)/,
-                "Internet Explorer": /(rv:|MSIE )(\d+(\.\d+)?)/,
-                "Mozilla":           /rv:(\d+(\.\d+)?)/
+                "Internet Explorer Mobile": /rv:(\d+(\.\d+)?)/,
+                "Microsoft Edge":           /Edge\/(\d+(\.\d+)?)/,
+                "Chrome":                   /Chrome\/(\d+(\.\d+)?)/,
+                "Chrome iOS":               /Chrome\/(\d+(\.\d+)?)/,
+                "Safari":                   /Version\/(\d+(\.\d+)?)/,
+                "Mobile Safari":            /Version\/(\d+(\.\d+)?)/,
+                "Opera":                    /(Opera|OPR)\/(\d+(\.\d+)?)/,
+                "Firefox":                  /Firefox\/(\d+(\.\d+)?)/,
+                "Konqueror":                /Konqueror:(\d+(\.\d+)?)/,
+                "BlackBerry":               /BlackBerry (\d+(\.\d+)?)/,
+                "Android Mobile":           /android\s(\d+(\.\d+)?)/,
+                "Internet Explorer":        /(rv:|MSIE )(\d+(\.\d+)?)/,
+                "Mozilla":                  /rv:(\d+(\.\d+)?)/
             };
             var regex = versionRegexs[browser];
             if (regex == undefined) {
@@ -1362,7 +1368,7 @@ Globals should be all caps
         os: function() {
             var a = userAgent;
             if (/Windows/i.test(a)) {
-                if (/Phone/.test(a)) { return 'Windows Mobile'; }
+                if (/Phone/.test(a) || /WPDesktop/.test(a)) { return 'Windows Phone'; }
                 return 'Windows';
             } else if (/(iPhone|iPad|iPod)/.test(a)) {
                 return 'iOS';
@@ -1384,12 +1390,12 @@ Globals should be all caps
                 return 'iPad';
             } else if (/iPod/.test(user_agent)) {
                 return 'iPod Touch';
+            } else if (/Windows Phone/i.test(user_agent) || /WPDesktop/.test(user_agent)) {
+                return 'Windows Phone';
             } else if (/iPhone/.test(user_agent)) {
                 return 'iPhone';
             } else if (/(BlackBerry|PlayBook|BB10)/i.test(user_agent)) {
                 return 'BlackBerry';
-            } else if (/Windows Phone/i.test(user_agent)) {
-                return 'Windows Phone';
             } else if (/Android/.test(user_agent)) {
                 return 'Android';
             } else {
@@ -2547,7 +2553,7 @@ Globals should be all caps
      * ### Usage:
      *
      *     // register "Gender" as a super property
-     *     mixpanel.register('Gender', 'Female');
+     *     mixpanel.register({'Gender': 'Female'});
      *
      *     // register several super properties when a user signs up
      *     mixpanel.register({
@@ -2569,7 +2575,9 @@ Globals should be all caps
      * ### Usage:
      *
      *     // register a super property for the first time only
-     *     mixpanel.register_once('First Login Date', new Date());
+     *     mixpanel.register_once({
+     *         'First Login Date': new Date().toISOString()
+     *     });
      *
      * ### Notes:
      *
